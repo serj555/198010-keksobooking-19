@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Сергей Трубкин](https://up.htmlacademy.ru/javascript/19/user/198010).
-* Наставник: `Неизвестно`.
+* Наставник: `Андрей Карякин`.
 
 ---
 
