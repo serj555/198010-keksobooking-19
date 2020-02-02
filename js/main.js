@@ -42,7 +42,7 @@ var getRandomBetween = function (min, max) {
 
 // получение значения из рандомного елемента массива
 var getRandomElement = function (array) {
-  return array[getRandomBetween(0, array.length)];
+  return array[getRandomBetween(0, array.length - 1)];
 };
 
 // получение массива случайной длинны из другого массива
