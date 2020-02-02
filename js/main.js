@@ -53,8 +53,8 @@ var getRandomNumberElements = function (array) {
   var finalElements = [];
 
   for (var i = 0; i < numberElements; i++) {
-    var randomElement = getRandomBetween(0, copyElements.length - 1);
-    takeElements = copyElements.splice(randomElement, 1);
+    var randomNumberElement = getRandomBetween(0, copyElements.length - 1);
+    takeElements = copyElements.splice(randomNumberElement, 1);
     finalElements.push(takeElements[0]);
   }
   return finalElements;
