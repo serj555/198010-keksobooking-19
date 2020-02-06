@@ -2,16 +2,26 @@
 
 var Nodes = {
   MAP: document.querySelector('.map'),
+  MAP_PIN_MAIN: document.querySelector('.map__pin--main'),
   MAP_PIN_TEMPLATE: document.querySelector('#pin')
     .content
     .querySelector('.map__pin'),
   MAP_PINS_BLOCK: document.querySelector('.map__pins'),
+  MAP_FILTERS: document.querySelector('.map__filters'),
+  FIELD_ADDRESS: document.querySelector('#address'),
+  FORM: document.querySelector('.ad-form'),
 };
+var Offset = {
+  OFFSET_MAP_PIN_X: 25, // размер смещения маркера по оси X
+  OFFSET_MAP_PIN_Y: 70, // размер смещения маркера по оси Y
+  OFFSET_MAP_PIN_MAIN_X: 32,
+  OFFSET_MAP_PIN_MAIN_Y: 80
+};
+var KEY_ENTER = 'Enter';
 var NUMBER_USERS = 8;
 var MAP_PIN_MIN_Y = 130;
 var MAP_PIN_MAX_Y = 630;
 var MAP_PIN_MIN_X = 0;
-var OFFSET_MAP_PIN_X = 25; // размер смещения маркера по оси X
 var PRICE_MIN = 1000;
 var PRICE_MAX = 5000;
 var ROOM_MIN = 1;
@@ -75,7 +85,7 @@ var createUserData = function (number) {
 
     location: {
       x: getRandomBetween(MAP_PIN_MIN_X, (getElementWidth(Nodes.MAP))),
-      y: getRandomBetween(MAP_PIN_MIN_Y, MAP_PIN_MAX_Y)
+      y: getRandomBetween(MAP_PIN_MIN_Y + Offset.OFFSET_MAP_PIN_Y, MAP_PIN_MAX_Y + Offset.OFFSET_MAP_PIN_Y)
     },
 
     offer: {
@@ -116,8 +126,8 @@ var renderPins = function () {
     var pinElement = Nodes.MAP_PIN_TEMPLATE.cloneNode(true);
     var pinImage = pinElement.querySelector('img');
 
-    pinElement.style.left = (element.location.x - OFFSET_MAP_PIN_X) + 'px';
-    pinElement.style.top = (element.location.y) + 'px';
+    pinElement.style.left = (element.location.x - Offset.OFFSET_MAP_PIN_X) + 'px';
+    pinElement.style.top = (element.location.y - Offset.OFFSET_MAP_PIN_Y) + 'px';
     pinImage.src = element.author.avatar;
     pinImage.alt = element.offer.title;
 
@@ -133,4 +143,77 @@ var activateMap = function () {
   Nodes.MAP.classList.remove('map--faded');
 };
 
-activateMap();
+// добавление атрибута Disabled к элементам коллекции
+var addDisabled = function (array) {
+  for (var i = 0; i < array.length; i++) {
+    array[i].setAttribute('disabled', 'disabled');
+  }
+};
+
+// удаление атрибута Disabled у элементов коллекции
+var removeDisabled = function (array) {
+  for (var i = 0; i < array.length; i++) {
+    array[i].removeAttribute('disabled');
+  }
+};
+
+// добавление/удаление disabled для всех дочерних элементов форм (дочерних элементов формы)
+var disableForm = function (stat) {
+  var formElements = Nodes.FORM.children;
+  var mapFilterElements = Nodes.MAP_FILTERS.children;
+
+  switch (stat) {
+    case 'on':
+      addDisabled(formElements);
+      addDisabled(mapFilterElements);
+      Nodes.FORM.classList.add('ad-form--disabled');
+      break;
+    case 'off':
+      removeDisabled(formElements);
+      removeDisabled(mapFilterElements);
+      Nodes.FORM.classList.remove('ad-form--disabled');
+      break;
+  }
+};
+disableForm('on');
+
+// добавление координат метки в поле с адресом
+// preload - расчет координат относительно цента метки(в момент загрузки страницы)
+// move - расчет координат относительно указателя метки(после активации карты)
+var getLocationPin = function (stat) {
+  var mainPinWidth = Nodes.MAP_PIN_MAIN.offsetWidth;
+  var mainPinHeight = Nodes.MAP_PIN_MAIN.offsetHeight;
+  var pinStyles = getComputedStyle(Nodes.MAP_PIN_MAIN);
+
+  switch (stat) {
+    case 'preload':
+      var pinLocationX = parseInt(pinStyles.left, 10) + mainPinWidth / 2;
+      var pinLocationY = parseInt(pinStyles.top, 10) + mainPinHeight / 2;
+      break;
+    case 'move':
+      pinLocationX = parseInt(pinStyles.left, 10) + Offset.OFFSET_MAP_PIN_MAIN_X;
+      pinLocationY = parseInt(pinStyles.top, 10) + Offset.OFFSET_MAP_PIN_MAIN_Y;
+      break;
+  }
+
+  Nodes.FIELD_ADDRESS.value = Math.floor(pinLocationX) + ', ' + (Math.floor(pinLocationY));
+};
+getLocationPin('preload');
+
+Nodes.MAP_PIN_MAIN.addEventListener('mousedown', function (evt) {
+  evt.preventDefault();
+  if (evt.button === 0) {
+    activateMap();
+    disableForm('off');
+    getLocationPin('move');
+  }
+});
+
+Nodes.MAP_PIN_MAIN.addEventListener('keydown', function (evt) {
+  evt.preventDefault();
+  if (evt.key === KEY_ENTER) {
+    activateMap();
+    disableForm('off');
+  }
+});
+
