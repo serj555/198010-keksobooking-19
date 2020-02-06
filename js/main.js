@@ -1,15 +1,17 @@
 'use strict';
 
+var Nodes = {
+  MAP: document.querySelector('.map'),
+  MAP_PIN_TEMPLATE: document.querySelector('#pin')
+    .content
+    .querySelector('.map__pin'),
+  MAP_PINS_BLOCK: document.querySelector('.map__pins'),
+};
 var NUMBER_USERS = 8;
 var MAP_PIN_MIN_Y = 130;
 var MAP_PIN_MAX_Y = 630;
 var MAP_PIN_MIN_X = 0;
 var OFFSET_MAP_PIN_X = 25; // размер смещения маркера по оси X
-var MAP = document.querySelector('.map');
-var MAP_PIN_TEMPLATE = document.querySelector('#pin')
-  .content
-  .querySelector('.map__pin');
-var MAP_PINS_BLOCK = document.querySelector('.map__pins');
 var PRICE_MIN = 1000;
 var PRICE_MAX = 5000;
 var ROOM_MIN = 1;
@@ -49,13 +51,12 @@ var getRandomElement = function (array) {
 var getRandomNumberElements = function (array) {
   var copyElements = array.slice(0, array.length);
   var numberElements = getRandomBetween(1, copyElements.length);
-  var takeElements = [];
   var finalElements = [];
 
   for (var i = 0; i < numberElements; i++) {
-    var randomNumberElement = getRandomBetween(0, copyElements.length - 1);
-    takeElements = copyElements.splice(randomNumberElement, 1);
-    finalElements.push(takeElements[0]);
+    var randomIndex = getRandomBetween(0, copyElements.length - 1);
+    finalElements.push(copyElements[randomIndex]);
+    copyElements.splice(randomIndex, 1);
   }
   return finalElements;
 };
@@ -67,34 +68,30 @@ var createImageNames = function (number) {
 
 // создание массива с данными пользователя
 var createUserData = function (number) {
-  var userData = [];
+  var userData = {
+    author: {
+      avatar: createImageNames(number)
+    },
 
-  var author = {
-    avatar: createImageNames(number)
+    location: {
+      x: getRandomBetween(MAP_PIN_MIN_X, (getElementWidth(Nodes.MAP))),
+      y: getRandomBetween(MAP_PIN_MIN_Y, MAP_PIN_MAX_Y)
+    },
+
+    offer: {
+      title: 'заголовок предложения',
+      address: location.x + ', ' + location.y,
+      price: getRandomBetween(PRICE_MIN, PRICE_MAX),
+      type: getRandomElement(TYPES),
+      rooms: getRandomBetween(ROOM_MIN, ROOM_MAX),
+      guests: getRandomBetween(GUEST_MIN, GUEST_MAX),
+      checkin: getRandomElement(CHECK_TIMES),
+      checkout: getRandomElement(CHECK_TIMES),
+      features: getRandomNumberElements(FEATURES),
+      description: 'описание',
+      photos: getRandomNumberElements(PHOTOS)
+    }
   };
-
-  var location = {
-    x: getRandomBetween(MAP_PIN_MIN_X, (getElementWidth(MAP))),
-    y: getRandomBetween(MAP_PIN_MIN_Y, MAP_PIN_MAX_Y)
-  };
-
-  var offer = {
-    title: 'заголовок предложения',
-    address: location.x + ', ' + location.y,
-    price: getRandomBetween(PRICE_MIN, PRICE_MAX),
-    type: getRandomElement(TYPES),
-    rooms: getRandomBetween(ROOM_MIN, ROOM_MAX),
-    guests: getRandomBetween(GUEST_MIN, GUEST_MAX),
-    checkin: getRandomElement(CHECK_TIMES),
-    checkout: getRandomElement(CHECK_TIMES),
-    features: getRandomNumberElements(FEATURES),
-    description: 'описание',
-    photos: getRandomNumberElements(PHOTOS)
-  };
-
-  userData.author = author;
-  userData.offer = offer;
-  userData.location = location;
 
   return userData;
 };
@@ -116,7 +113,7 @@ var renderPins = function () {
   var users = createUsers();
 
   users.forEach(function (element) {
-    var pinElement = MAP_PIN_TEMPLATE.cloneNode(true);
+    var pinElement = Nodes.MAP_PIN_TEMPLATE.cloneNode(true);
     var pinImage = pinElement.querySelector('img');
 
     pinElement.style.left = (element.location.x - OFFSET_MAP_PIN_X) + 'px';
@@ -127,13 +124,13 @@ var renderPins = function () {
     fragment.appendChild(pinElement);
   });
 
-  MAP_PINS_BLOCK.appendChild(fragment);
+  Nodes.MAP_PINS_BLOCK.appendChild(fragment);
 };
 
 // функция активации карты
 var activateMap = function () {
   renderPins();
-  MAP.classList.remove('map--faded');
+  Nodes.MAP.classList.remove('map--faded');
 };
 
 activateMap();
