@@ -18,11 +18,13 @@ var Nodes = {
   ROOM_SELECT: document.querySelector('#room_number'),
   CAPACITY_SELECT: document.querySelector('#capacity'),
 };
-var MapPinOffset = {
-  X: 25, // размер смещения маркера по оси X
-  Y: 70, // размер смещения маркера по оси Y
-  MAIN_X: 32,
-  MAIN_Y: 80
+var MapPin = {
+  OFFSET_X: 25, // размер смещения маркера по оси X
+  OFFSET_Y: 70, // размер смещения маркера по оси Y
+};
+var MainPin = {
+  OFFSET_X: 32,
+  OFFSET_Y: 80
 };
 var MapPinLocation = {
   MIN_Y: 130,
@@ -99,7 +101,7 @@ var createImageNames = function (number) {
 // создание массива с данными пользователя
 var createUserData = function (number) {
   var locationX = getRandomBetween(MapPinLocation.MIN_X, (getElementWidth(Nodes.MAP)));
-  var locationY = getRandomBetween(MapPinLocation.MIN_Y + MapPinOffset.Y, MapPinLocation.MAX_Y + MapPinOffset.Y);
+  var locationY = getRandomBetween(MapPinLocation.MIN_Y + MapPin.OFFSET_Y, MapPinLocation.MAX_Y + MapPin.OFFSET_Y);
 
   var userData = {
     author: {
@@ -149,8 +151,8 @@ var renderPins = function () {
     var pinElement = Nodes.MAP_PIN_TEMPLATE.cloneNode(true);
     var pinImage = pinElement.querySelector('img');
 
-    pinElement.style.left = (element.location.x - MapPinOffset.X) + 'px';
-    pinElement.style.top = (element.location.y - MapPinOffset.Y) + 'px';
+    pinElement.style.left = (element.location.x - MapPin.OFFSET_X) + 'px';
+    pinElement.style.top = (element.location.y - MapPin.OFFSET_Y) + 'px';
     pinImage.src = element.author.avatar;
     pinImage.alt = element.offer.title;
 
@@ -160,16 +162,16 @@ var renderPins = function () {
 };
 
 // добавление('add')/удаление('remove') атрибута Disabled у элементов коллекции
-var setDisabled = function (array, act) {
+var setDisabled = function (HTMLCollection, act) {
   switch (act) {
     case 'add':
-      for (var i = 0; i < array.length; i++) {
-        array[i].setAttribute('disabled', 'disabled');
+      for (var i = 0; i < HTMLCollection.length; i++) {
+        HTMLCollection[i].setAttribute('disabled', 'disabled');
       }
       break;
     case 'remove':
-      for (i = 0; i < array.length; i++) {
-        array[i].removeAttribute('disabled');
+      for (i = 0; i < HTMLCollection.length; i++) {
+        HTMLCollection[i].removeAttribute('disabled');
       }
       break;
   }
@@ -202,16 +204,9 @@ var getLocationPin = function (stat) {
   var mainPinHeight = Nodes.MAP_PIN_MAIN.offsetHeight;
   var pinStyles = getComputedStyle(Nodes.MAP_PIN_MAIN);
 
-  switch (stat) {
-    case 'preload':
-      var pinLocationX = parseInt(pinStyles.left, 10) + mainPinWidth / 2;
-      var pinLocationY = parseInt(pinStyles.top, 10) + mainPinHeight / 2;
-      break;
-    case 'move':
-      pinLocationX = parseInt(pinStyles.left, 10) + MapPinOffset.MAIN_X;
-      pinLocationY = parseInt(pinStyles.top, 10) + MapPinOffset.MAIN_Y;
-      break;
-  }
+  var isPreload = stat === 'preload';
+  var pinLocationX = parseInt(pinStyles.left, 10) + (isPreload ? mainPinWidth / 2 : MainPin.OFFSET_X);
+  var pinLocationY = parseInt(pinStyles.top, 10) + (isPreload ? mainPinHeight / 2 : MainPin.OFFSET_Y);
 
   Nodes.FIELD_ADDRESS.value = Math.floor(pinLocationX) + ', ' + (Math.floor(pinLocationY));
 };
