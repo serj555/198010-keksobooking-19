@@ -49,6 +49,12 @@ var PricePerNight = {
   house: '5000',
   palace: '10000',
 };
+var prices = {
+  'bungalo': PricePerNight.bungalo,
+  'flat': PricePerNight.flat,
+  'house': PricePerNight.house,
+  'palace': PricePerNight.palace,
+};
 var KEY_ENTER = 'Enter';
 var NUMBER_USERS = 8;
 var TYPES = ['palace', 'flat', 'house', 'bungalo'];
@@ -59,11 +65,13 @@ var FEATURES = [
   'parking',
   'washer',
   'elevator',
-  'conditioner'];
+  'conditioner',
+];
 var PHOTOS = [
   'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
   'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
-  'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
+  'http://o0.github.io/assets/images/tokyo/hotel3.jpg',
+];
 
 // получение ширины DOM-элемента
 var getElementWidth = function (element) {
@@ -81,14 +89,14 @@ var getRandomElement = function (array) {
 };
 
 // получение массива случайной длинны из другого массива
-var getRandomNumberElements = function (array) {
-  var copyElements = array.slice(0, array.length);
+var getRandomNumberElements = function (items) {
+  var copyElements = items.slice(0, items.length);
   var numberElements = getRandomBetween(1, copyElements.length);
   var finalElements = [];
 
   for (var i = 0; i < numberElements; i++) {
     var randomIndex = getRandomBetween(0, copyElements.length - 1);
-    finalElements.push(copyElements[randomIndex]);
+    finalElements.push(copyElements.splice(randomIndex, 1)[0]);
   }
   return finalElements;
 };
@@ -100,8 +108,8 @@ var createImageNames = function (number) {
 
 // создание массива с данными пользователя
 var createUserData = function (number) {
-  var locationX = getRandomBetween(MapPinLocation.MIN_X, (getElementWidth(Nodes.MAP)));
-  var locationY = getRandomBetween(MapPinLocation.MIN_Y + MapPin.OFFSET_Y, MapPinLocation.MAX_Y + MapPin.OFFSET_Y);
+  var locationX = getRandomBetween(MapPinLocation.MIN_X, getElementWidth(Nodes.MAP));
+  var locationY = getRandomBetween(MapPinLocation.MIN_Y + MapPin.OFFSET_Y, MapPinLocation.MAX_Y);
 
   var userData = {
     author: {
@@ -132,48 +140,47 @@ var createUserData = function (number) {
 };
 
 // создание массива с данными пользователей
-var createUsers = function () {
+var createUsers = function (number) {
   var users = [];
 
-  for (var i = 0; i < NUMBER_USERS; i++) {
+  for (var i = 0; i < number; i++) {
     users.push(createUserData(i));
   }
 
   return users;
 };
 
+var createPinElement = function (item) {
+  var pinElement = Nodes.MAP_PIN_TEMPLATE.cloneNode(true);
+  var pinImage = pinElement.querySelector('img');
+
+  pinElement.style.left = (item.location.x - MapPin.OFFSET_X) + 'px';
+  pinElement.style.top = (item.location.y - MapPin.OFFSET_Y) + 'px';
+  pinImage.src = item.author.avatar;
+  pinImage.alt = item.offer.title;
+
+  return pinElement;
+};
+
 // создание фрагмента с метками пользователей на основе шаблона и вставка в DOM
 var renderPins = function () {
   var fragment = document.createDocumentFragment();
-  var users = createUsers();
+  var users = createUsers(NUMBER_USERS);
 
-  users.forEach(function (element) {
-    var pinElement = Nodes.MAP_PIN_TEMPLATE.cloneNode(true);
-    var pinImage = pinElement.querySelector('img');
-
-    pinElement.style.left = (element.location.x - MapPin.OFFSET_X) + 'px';
-    pinElement.style.top = (element.location.y - MapPin.OFFSET_Y) + 'px';
-    pinImage.src = element.author.avatar;
-    pinImage.alt = element.offer.title;
-
-    fragment.appendChild(pinElement);
+  users.forEach(function (item) {
+    fragment.appendChild(createPinElement(item));
   });
   return fragment;
 };
 
 // добавление('add')/удаление('remove') атрибута Disabled у элементов коллекции
 var setDisabled = function (HTMLCollection, act) {
-  switch (act) {
-    case 'add':
-      for (var i = 0; i < HTMLCollection.length; i++) {
-        HTMLCollection[i].setAttribute('disabled', 'disabled');
-      }
-      break;
-    case 'remove':
-      for (i = 0; i < HTMLCollection.length; i++) {
-        HTMLCollection[i].removeAttribute('disabled');
-      }
-      break;
+
+  var isDisabled = act === 'add';
+  var action = isDisabled ? 'setAttribute' : 'removeAttribute';
+
+  for (var i = 0; i < HTMLCollection.length; i++) {
+    HTMLCollection[i][action]('disabled', 'disabled');
   }
 };
 
@@ -181,19 +188,12 @@ var setDisabled = function (HTMLCollection, act) {
 var activateForm = function (stat) {
   var formElements = Nodes.FORM.children;
   var mapFilterElements = Nodes.MAP_FILTERS.children;
+  var isActivate = stat === 'on';
+  var action = isActivate ? 'remove' : 'add';
 
-  switch (stat) {
-    case 'on':
-      setDisabled(formElements, 'remove');
-      setDisabled(mapFilterElements, 'remove');
-      Nodes.FORM.classList.remove('ad-form--disabled');
-      break;
-    case 'off':
-      setDisabled(formElements, 'add');
-      setDisabled(mapFilterElements, 'add');
-      Nodes.FORM.classList.add('ad-form--disabled');
-      break;
-  }
+  setDisabled(formElements, action);
+  setDisabled(mapFilterElements, action);
+  Nodes.FORM.classList[action]('ad-form--disabled');
 };
 
 // добавление координат метки в поле с адресом
@@ -224,16 +224,21 @@ var activateMap = function (evt) {
   }
 };
 
+// активация пунктов количества гостей
+var activateGuestOption = function (number) {
+  for (var i = 0; i < number; i++) {
+    Nodes.CAPACITY_SELECT.querySelector('option[value="' + (i + 1) + '"]').disabled = false;
+  }
+};
+
 // устанавливает максимальное количество гостей в зависимости от количства комнат
 var changeNumberGuests = function (number) {
   var capacityOptions = Nodes.CAPACITY_SELECT.children;
 
   setDisabled(capacityOptions, 'add');
 
-  if (number > 0 && number < 100) {
-    for (var i = number; i > 0; i--) {
-      Nodes.CAPACITY_SELECT.querySelector('option[value="' + i + '"]').disabled = false;
-    }
+  if (number < 100) {
+    activateGuestOption(number);
   } else if (number === '100') {
     Nodes.CAPACITY_SELECT.querySelector('option[value="0"]').disabled = false;
   } else {
@@ -243,51 +248,27 @@ var changeNumberGuests = function (number) {
 
 // устанавливает минимальную цену за ночь в зависимости от типа жилья
 var changeCostPerNight = function (value) {
-  var minPrice = 0;
-
-  switch (value) {
-    case 'bungalo':
-      minPrice = PricePerNight.bungalo;
-      break;
-    case 'flat':
-      minPrice = PricePerNight.flat;
-      break;
-    case 'house':
-      minPrice = PricePerNight.house;
-      break;
-    case 'palace':
-      minPrice = PricePerNight.palace;
-      break;
-    default:
-      minPrice = 0;
-  }
-
-  Nodes.PRICE_PER_NIGHT_INPUT.setAttribute('min', minPrice);
-  Nodes.PRICE_PER_NIGHT_INPUT.setAttribute('placeholder', minPrice);
+  Nodes.PRICE_PER_NIGHT_INPUT.setAttribute('min', prices[value]);
+  Nodes.PRICE_PER_NIGHT_INPUT.setAttribute('placeholder', prices[value]);
 };
 
 // устанавливает одинаковое время заезда и выезда
 var timeCheck = function (element, value) {
-  var timeInCurrentSelect = Nodes.TIMEIN_SELECT.querySelector('option[value="' + value + '"]');
-  var timeOutCurrentSelect = Nodes.TIMEOUT_SELECT.querySelector('option[value="' + value + '"]');
 
   if (element === 'timeout') {
-    timeInCurrentSelect.selected = true;
+    Nodes.TIMEIN_SELECT.querySelector('option[value="' + value + '"]').selected = true;
   } else if (element === 'timein') {
-    timeOutCurrentSelect.selected = true;
+    Nodes.TIMEOUT_SELECT.querySelector('option[value="' + value + '"]').selected = true;
   }
-
-  // тернарное выражение работает но ругается ESLint
-  // element === 'timeout' ? (timeInCurrentSelect.selected = true) : (timeOutCurrentSelect.selected = true);
 };
 
-// валидация поля с количеством гостей
-var validateCapacty = function () {
+// определение подходящего сообщения при валидации
+var setMessageCapacity = function () {
   var rooms = parseInt(Nodes.ROOM_SELECT.value, 10);
   var guests = parseInt(Nodes.CAPACITY_SELECT.value, 10);
   var message = '';
 
-  if ((rooms < 100) && (guests > 1)) {
+  if ((rooms < guests) && (guests > 1)) {
     message = 'Количество гостей не должно быть больше количества комнат';
   } else if ((rooms === 100) && (guests > 0)) {
     message = 'Такое количество комнат скорее всего не для гостей';
@@ -295,7 +276,12 @@ var validateCapacty = function () {
     message = 'Выберите подходящее количество гостей';
   }
 
-  Nodes.CAPACITY_SELECT.setCustomValidity(message);
+  return message;
+};
+
+// валидация поля с количеством гостей
+var validateCapacty = function () {
+  Nodes.CAPACITY_SELECT.setCustomValidity(setMessageCapacity());
 };
 
 var onTimeCheckChange = function (evt) {
