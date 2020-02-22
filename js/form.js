@@ -3,6 +3,8 @@
 (function () {
 
   var Nodes = {
+    MAP: document.querySelector('.map'),
+    MAP_PIN_MAIN: document.querySelector('.map__pin--main'),
     MAP_PINS_BLOCK: document.querySelector('.map__pins'),
     MAP_FILTERS: document.querySelector('.map__filters'),
     FORM: document.querySelector('.ad-form'),
@@ -27,13 +29,13 @@
     'palace': PricePerNight.palace,
   };
   var KEY_ENTER = 'Enter';
+  var maxNumberRoom = Math.max.apply(null, window.mock.ROOMS);
 
   // активация('on')/деактивация('off') формы и фильтра
   var activateForm = function (stat) {
     var formElements = Nodes.FORM.children;
     var mapFilterElements = Nodes.MAP_FILTERS.children;
-    var isActivate = stat === 'on';
-    var action = isActivate ? 'remove' : 'add';
+    var action = stat === 'on' ? 'remove' : 'add';
 
     window.util.setDisabled(formElements, action);
     window.util.setDisabled(mapFilterElements, action);
@@ -53,9 +55,9 @@
 
     window.util.setDisabled(capacityOptions, 'add');
 
-    if (number < 100) {
+    if (+number < maxNumberRoom) {
       activateGuestOption(number);
-    } else if (number === '100') {
+    } else if (+number === maxNumberRoom) {
       Nodes.CAPACITY_SELECT.querySelector('option[value="0"]').disabled = false;
     } else {
       window.util.setDisabled(capacityOptions, 'remove');
@@ -86,18 +88,13 @@
 
     if ((rooms < guests) && (guests > 1)) {
       message = 'Количество гостей не должно быть больше количества комнат';
-    } else if ((rooms === 100) && (guests > 0)) {
+    } else if ((rooms === maxNumberRoom) && (guests > 0)) {
       message = 'Такое количество комнат скорее всего не для гостей';
-    } else if ((rooms < 100) && (guests === 0)) {
+    } else if ((rooms < maxNumberRoom) && (guests === 0)) {
       message = 'Выберите подходящее количество гостей';
     }
 
     return message;
-  };
-
-  // валидация поля с количеством гостей
-  var validateCapacty = function () {
-    Nodes.CAPACITY_SELECT.setCustomValidity(setMessageCapacity());
   };
 
   var onTimeCheckChange = function (evt) {
@@ -111,12 +108,13 @@
     }
   };
 
+  // валидация поля при клике на кнопку отправки формы
   var onSubmitFormClick = function () {
-    validateCapacty();
+    Nodes.CAPACITY_SELECT.setCustomValidity(setMessageCapacity());
   };
 
   var onMainPinClick = function (evt) {
-    var existClass = window.data.Nodes.MAP.classList.contains('map--faded');
+    var existClass = Nodes.MAP.classList.contains('map--faded');
 
     if ((evt.button === 0 && existClass) || (evt.key === KEY_ENTER && existClass)) {
 
@@ -145,8 +143,8 @@
 
   Nodes.FORM.addEventListener('change', onTimeCheckChange);
   Nodes.FORM_SUBMIT_BUTTON.addEventListener('click', onSubmitFormClick);
-  window.data.Nodes.MAP_PIN_MAIN.addEventListener('mousedown', onMainPinClick);
-  window.data.Nodes.MAP_PIN_MAIN.addEventListener('keydown', onMainPinClick);
+  Nodes.MAP_PIN_MAIN.addEventListener('mousedown', onMainPinClick);
+  Nodes.MAP_PIN_MAIN.addEventListener('keydown', onMainPinClick);
 
 
   window.pin.getLocationPin('preload');
