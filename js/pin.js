@@ -8,7 +8,6 @@
       .content
       .querySelector('.map__pin'),
   };
-  var ADS_COUNT = 8;
   var Offset = {
     X: 25, // размер смещения маркера по оси X
     Y: 70, // размер смещения маркера по оси Y
@@ -16,7 +15,7 @@
     MAIN_Y: 80, // размер смещения главного маркера по оси Y
   };
 
-  var createElement = function (item) {
+  var renderPin = function (item) {
     var pinElement = Nodes.TEMPLATE.cloneNode(true);
     var pinImage = pinElement.querySelector('img');
 
@@ -29,12 +28,11 @@
   };
 
   // создание фрагмента с метками пользователей на основе шаблона и вставка в DOM
-  var renderNewOnes = function () {
+  var renderPins = function (users) {
     var fragment = document.createDocumentFragment();
-    var users = window.mock.generateData(ADS_COUNT);
 
     users.forEach(function (item) {
-      fragment.appendChild(createElement(item));
+      fragment.appendChild(renderPin(item));
     });
     return fragment;
   };
@@ -54,7 +52,7 @@
   };
 
   window.pin = {
-    renderNewOnes: renderNewOnes,
+    renderPins: renderPins,
     getLocationPin: getLocationPin
   };
 })();

@@ -17,19 +17,20 @@
     CAPACITY_SELECT: document.querySelector('#capacity'),
   };
   var PricePerNight = {
-    bungalo: '0',
-    flat: '1000',
-    house: '5000',
-    palace: '10000',
+    BUNGALO: '0',
+    FLAT: '1000',
+    HOUSE: '5000',
+    PALACE: '10000',
   };
   var prices = {
-    'bungalo': PricePerNight.bungalo,
-    'flat': PricePerNight.flat,
-    'house': PricePerNight.house,
-    'palace': PricePerNight.palace,
+    'bungalo': PricePerNight.BUNGALO,
+    'flat': PricePerNight.FLAT,
+    'house': PricePerNight.HOUSE,
+    'palace': PricePerNight.PALACE,
   };
   var KEY_ENTER = 'Enter';
-  var maxNumberRoom = Math.max.apply(null, window.mock.ROOMS);
+  var ROOMS_MAX = Math.max.apply(null, window.mock.ROOMS);
+  var ADS_COUNT = 8;
 
   // активация('on')/деактивация('off') формы и фильтра
   var activateForm = function (stat) {
@@ -55,9 +56,9 @@
 
     window.util.setDisabled(capacityOptions, 'add');
 
-    if (+number < maxNumberRoom) {
+    if (+number < ROOMS_MAX) {
       activateGuestOption(number);
-    } else if (+number === maxNumberRoom) {
+    } else if (+number === ROOMS_MAX) {
       Nodes.CAPACITY_SELECT.querySelector('option[value="0"]').disabled = false;
     } else {
       window.util.setDisabled(capacityOptions, 'remove');
@@ -88,9 +89,9 @@
 
     if ((rooms < guests) && (guests > 1)) {
       message = 'Количество гостей не должно быть больше количества комнат';
-    } else if ((rooms === maxNumberRoom) && (guests > 0)) {
+    } else if ((rooms === ROOMS_MAX) && (guests > 0)) {
       message = 'Такое количество комнат скорее всего не для гостей';
-    } else if ((rooms < maxNumberRoom) && (guests === 0)) {
+    } else if ((rooms < ROOMS_MAX) && (guests === 0)) {
       message = 'Выберите подходящее количество гостей';
     }
 
@@ -118,7 +119,7 @@
 
     if ((evt.button === 0 && existClass) || (evt.key === KEY_ENTER && existClass)) {
 
-      Nodes.MAP_PINS_BLOCK.appendChild(window.pin.renderNewOnes());
+      Nodes.MAP_PINS_BLOCK.appendChild(window.pin.renderPins(window.mock.generateData(ADS_COUNT)));
       window.map.activateMap();
       window.pin.getLocationPin('move');
       activateForm('on');
