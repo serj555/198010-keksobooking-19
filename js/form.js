@@ -119,7 +119,7 @@
 
     if ((evt.button === 0 && existClass) || (evt.key === KEY_ENTER && existClass)) {
 
-      Nodes.MAP_PINS_BLOCK.appendChild(window.pin.renderPins(window.mock.generateData(ADS_COUNT)));
+      Nodes.MAP_PINS_BLOCK.appendChild(window.pin.renderAll(window.mock.generateData(ADS_COUNT)));
       window.map.activateMap();
       window.pin.getLocationPin('move');
       activateForm('on');

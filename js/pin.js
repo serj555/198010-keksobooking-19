@@ -52,7 +52,7 @@
   };
 
   window.pin = {
-    renderPins: renderPins,
+    renderAll: renderPins,
     getLocationPin: getLocationPin
   };
 })();
