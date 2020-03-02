@@ -40,7 +40,7 @@
 
   // получение массива ссылок на аватара пользователя
   var createImageNames = function (number) {
-    return 'img/avatars/user0' + (number + 1) + '.png';
+    return 'img/avatars/user' + ('' + (number + 1)).padStart(2, 0) + '.png';
   };
 
   // создание массива с данными пользователя

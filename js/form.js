@@ -15,6 +15,7 @@
     TYPE_HOUSE_SELECT: document.querySelector('#type'),
     ROOM_SELECT: document.querySelector('#room_number'),
     CAPACITY_SELECT: document.querySelector('#capacity'),
+    CAPACITY_OPTION_NOT_GUEST: document.querySelector('#capacity option[value="0"]'),
   };
   var PricePerNight = {
     BUNGALO: '0',
@@ -44,22 +45,24 @@
   };
 
   // активация пунктов количества гостей
-  var activateGuestOption = function (number) {
-    for (var i = 0; i < number; i++) {
-      Nodes.CAPACITY_SELECT.querySelector('option[value="' + (i + 1) + '"]').disabled = false;
-    }
+  var activateGuestOption = function (guests, numberRooms) {
+    guests.forEach(function (elem) {
+      if (elem.value <= numberRooms && elem.value > 0) {
+        elem.disabled = false;
+      }
+    });
   };
 
   // устанавливает максимальное количество гостей в зависимости от количства комнат
   var changeNumberGuests = function (number) {
-    var capacityOptions = Nodes.CAPACITY_SELECT.children;
+    var capacityOptions = document.querySelectorAll('#capacity option');
 
     window.util.setDisabled(capacityOptions, 'add');
 
     if (+number < ROOMS_MAX) {
-      activateGuestOption(number);
+      activateGuestOption(capacityOptions, number);
     } else if (+number === ROOMS_MAX) {
-      Nodes.CAPACITY_SELECT.querySelector('option[value="0"]').disabled = false;
+      Nodes.CAPACITY_OPTION_NOT_GUEST.disabled = false;
     } else {
       window.util.setDisabled(capacityOptions, 'remove');
     }
@@ -82,20 +85,19 @@
   };
 
   // определение подходящего сообщения при валидации
-  var setMessageCapacity = function () {
+  var messageCapacity = function () {
     var rooms = parseInt(Nodes.ROOM_SELECT.value, 10);
     var guests = parseInt(Nodes.CAPACITY_SELECT.value, 10);
-    var message = '';
 
     if ((rooms < guests) && (guests > 1)) {
-      message = 'Количество гостей не должно быть больше количества комнат';
+      return 'Количество гостей не должно быть больше количества комнат';
     } else if ((rooms === ROOMS_MAX) && (guests > 0)) {
-      message = 'Такое количество комнат скорее всего не для гостей';
+      return 'Такое количество комнат скорее всего не для гостей';
     } else if ((rooms < ROOMS_MAX) && (guests === 0)) {
-      message = 'Выберите подходящее количество гостей';
+      return 'Выберите подходящее количество гостей';
     }
 
-    return message;
+    return '';
   };
 
   var onTimeCheckChange = function (evt) {
@@ -111,7 +113,7 @@
 
   // валидация поля при клике на кнопку отправки формы
   var onSubmitFormClick = function () {
-    Nodes.CAPACITY_SELECT.setCustomValidity(setMessageCapacity());
+    Nodes.CAPACITY_SELECT.setCustomValidity(messageCapacity());
   };
 
   var onMainPinClick = function (evt) {
