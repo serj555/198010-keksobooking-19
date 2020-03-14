@@ -41,11 +41,25 @@
     }
   };
 
+  var onErrorLoad = function (errorMessage) {
+    var node = document.createElement('div');
+    node.classList.add('errorMessage');
+    node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
+    node.style.position = 'absolute';
+    node.style.left = 0;
+    node.style.right = 0;
+    node.style.fonsize = '30px';
+
+    node.textContent = errorMessage;
+    document.body.insertAdjacentElement('afterbegin', node);
+  };
+
   window.util = {
     getElementSize: getElementSize,
     getRandomBetween: getRandomBetween,
     getRandomElement: getRandomElement,
     getRandomNumberElements: getRandomNumberElements,
-    setDisabled: setDisabled
+    setDisabled: setDisabled,
+    onErrorLoad: onErrorLoad
   };
 })();

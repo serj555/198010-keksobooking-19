@@ -3,9 +3,6 @@
 (function () {
 
   var Nodes = {
-    MAP: document.querySelector('.map'),
-    MAP_PIN_MAIN: document.querySelector('.map__pin--main'),
-    MAP_PINS_BLOCK: document.querySelector('.map__pins'),
     MAP_FILTERS: document.querySelector('.map__filters'),
     FORM: document.querySelector('.ad-form'),
     PRICE_PER_NIGHT_INPUT: document.querySelector('#price'),
@@ -29,9 +26,7 @@
     'house': PricePerNight.HOUSE,
     'palace': PricePerNight.PALACE,
   };
-  var KEY_ENTER = 'Enter';
   var ROOMS_MAX = Math.max.apply(null, window.mock.ROOMS);
-  var ADS_COUNT = 8;
 
   // активация('on')/деактивация('off') формы и фильтра
   var activateForm = function (stat) {
@@ -116,21 +111,6 @@
     Nodes.CAPACITY_SELECT.setCustomValidity(messageCapacity());
   };
 
-  var onMainPinClick = function (evt) {
-    var existClass = Nodes.MAP.classList.contains('map--faded');
-
-    if ((evt.button === 0 && existClass) || (evt.key === KEY_ENTER && existClass)) {
-
-      Nodes.MAP_PINS_BLOCK.appendChild(window.pin.renderAll(window.mock.generateData(ADS_COUNT)));
-      window.map.activateMap();
-      window.pin.getLocationPin('move');
-      activateForm('on');
-    }
-
-    changeNumberGuests(Nodes.ROOM_SELECT.querySelector('option[selected]').value);
-    changeCostPerNight(Nodes.TYPE_HOUSE_SELECT.querySelector('option[selected]').value);
-  };
-
   // события
   Nodes.TYPE_HOUSE_SELECT.addEventListener('change', function (evt) {
     var target = evt.target;
@@ -146,10 +126,11 @@
 
   Nodes.FORM.addEventListener('change', onTimeCheckChange);
   Nodes.FORM_SUBMIT_BUTTON.addEventListener('click', onSubmitFormClick);
-  Nodes.MAP_PIN_MAIN.addEventListener('mousedown', onMainPinClick);
-  Nodes.MAP_PIN_MAIN.addEventListener('keydown', onMainPinClick);
 
-
-  window.pin.getLocationPin('preload');
+  window.pin.setLocationInForm('preload');
   activateForm('off');
+
+  window.form = {
+    activate: activateForm
+  };
 })();

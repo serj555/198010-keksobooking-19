@@ -3,6 +3,7 @@
 (function () {
   var Nodes = {
     MAP_PIN_MAIN: document.querySelector('.map__pin--main'),
+    MAP_PINS_BLOCK: document.querySelector('.map__pins'),
     FIELD_ADDRESS: document.querySelector('#address'),
     TEMPLATE: document.querySelector('#pin')
       .content
@@ -14,6 +15,7 @@
     MAIN_X: 32, // размер смещения главного маркера по оси X
     MAIN_Y: 80, // размер смещения главного маркера по оси Y
   };
+  var ADS_COUNT = 8;
 
   var renderPin = function (item) {
     var pinElement = Nodes.TEMPLATE.cloneNode(true);
@@ -28,19 +30,25 @@
   };
 
   // создание фрагмента с метками пользователей на основе шаблона и вставка в DOM
-  var renderPins = function (users) {
+  var onLoadUsersData = function (users) {
     var fragment = document.createDocumentFragment();
+    var usersForRender = users.slice(0, ADS_COUNT);
 
-    users.forEach(function (item) {
+    usersForRender.forEach(function (item) {
       fragment.appendChild(renderPin(item));
     });
-    return fragment;
+
+    Nodes.MAP_PINS_BLOCK.appendChild(fragment);
+  };
+
+  var renderPins = function () {
+    window.backend.load(onLoadUsersData, window.util.onErrorLoad);
   };
 
   // добавление координаты метки в поле с адресом
   // preload - расчет координат относительно цента метки(в момент загрузки страницы)
   // move - расчет координат относительно указателя метки(после активации карты)
-  var getLocationPin = function (stat) {
+  var setLocationInForm = function (stat) {
     var mainPinWidth = window.util.getElementSize(Nodes.MAP_PIN_MAIN, 'width');
     var mainPinHeight = window.util.getElementSize(Nodes.MAP_PIN_MAIN, 'height');
     var pinStyles = getComputedStyle(Nodes.MAP_PIN_MAIN);
@@ -53,6 +61,6 @@
 
   window.pin = {
     renderAll: renderPins,
-    getLocationPin: getLocationPin
+    setLocationInForm: setLocationInForm
   };
 })();
