@@ -12,6 +12,7 @@
     TYPE_HOUSE_SELECT: document.querySelector('#type'),
     ROOM_SELECT: document.querySelector('#room_number'),
     CAPACITY_SELECT: document.querySelector('#capacity'),
+    CAPACITY_OPTIONS: document.querySelectorAll('#capacity option'),
     CAPACITY_OPTION_NOT_GUEST: document.querySelector('#capacity option[value="0"]'),
   };
   var PricePerNight = {
@@ -50,16 +51,15 @@
 
   // устанавливает максимальное количество гостей в зависимости от количства комнат
   var changeNumberGuests = function (number) {
-    var capacityOptions = document.querySelectorAll('#capacity option');
 
-    window.util.setDisabled(capacityOptions, 'add');
+    window.util.setDisabled(Nodes.CAPACITY_OPTIONS, 'add');
 
     if (+number < ROOMS_MAX) {
-      activateGuestOption(capacityOptions, number);
+      activateGuestOption(Nodes.CAPACITY_OPTIONS, number);
     } else if (+number === ROOMS_MAX) {
       Nodes.CAPACITY_OPTION_NOT_GUEST.disabled = false;
     } else {
-      window.util.setDisabled(capacityOptions, 'remove');
+      window.util.setDisabled(Nodes.CAPACITY_OPTIONS, 'remove');
     }
   };
 
@@ -95,13 +95,16 @@
     return '';
   };
 
+  var preloadForm = function () {
+    window.pin.setLocationInForm('preload');
+    activateForm('off');
+  };
+
   var onTimeCheckChange = function (evt) {
     var target = evt.target;
     var targetName = target.getAttribute('name');
-    var matchesIn = target.matches('select[name="timein"]');
-    var matchesOut = target.matches('select[name="timeout"]');
 
-    if (target && (matchesIn || matchesOut)) {
+    if (target && target.name) {
       timeCheck(targetName, target.value);
     }
   };
@@ -111,24 +114,25 @@
     Nodes.CAPACITY_SELECT.setCustomValidity(messageCapacity());
   };
 
-  // события
-  Nodes.TYPE_HOUSE_SELECT.addEventListener('change', function (evt) {
+  var onTypeHouseChenge = function (evt) {
     var target = evt.target;
 
     changeCostPerNight(target.value);
-  });
+  };
 
-  Nodes.ROOM_SELECT.addEventListener('change', function (evt) {
+  var onRoomSelectChange = function (evt) {
     var target = evt.target;
 
     changeNumberGuests(target.value);
-  });
+  };
 
+  // события
+  Nodes.TYPE_HOUSE_SELECT.addEventListener('change', onTypeHouseChenge);
+  Nodes.ROOM_SELECT.addEventListener('change', onRoomSelectChange);
   Nodes.FORM.addEventListener('change', onTimeCheckChange);
   Nodes.FORM_SUBMIT_BUTTON.addEventListener('click', onSubmitFormClick);
 
-  window.pin.setLocationInForm('preload');
-  activateForm('off');
+  preloadForm();
 
   window.form = {
     activate: activateForm
